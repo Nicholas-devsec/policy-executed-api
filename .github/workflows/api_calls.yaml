@@ -35,15 +35,19 @@ jobs:
               "mkdir -p /var/www",
 
               "cd /var/www",
+              "sudo apt-get update -y",
+              "sudo apt-get install -y git python3-venv",
+
 
               "if [ ! -d policy-executed-api ]; then git clone https://github.com/Nicholas-devsec/policy-executed-api.git; fi",
               "cd policy-executed-api",
               "git pull",
 
               "if [ ! -d .venv ]; then python3 -m venv .venv; fi",
-              "source .venv/bin/activate",
-              "pip install --upgrade pip",
-              "pip install -r requirements.txt",
+              ". .venv/bin/activate",
+             ".venv/bin/pip install --upgrade pip",
+             ".venv/bin/pip install -r requirements.txt",
+
 
               "cp policy-executed-api.service /etc/systemd/system/",
               "systemctl daemon-reload",
