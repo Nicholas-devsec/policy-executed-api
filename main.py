@@ -15,7 +15,7 @@ class ActionRequest(BaseModel):
 actions = {
         "health_check": {
             "command": ["systemctl", "is-active", "ssh"],
-            "max_output": 1024
+            "max_output": 1024 
         },
         }
 
