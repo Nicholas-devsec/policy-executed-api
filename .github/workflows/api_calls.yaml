@@ -24,13 +24,31 @@ jobs:
           aws-region: us-east-1
 
       - name: Deploy via SSM
+
         run: |
           aws ssm send-command \
             --document-name "AWS-RunShellScript" \
-            --comment "GitHub Actions deploy" \
+            --comment "GitHub Actions deploy policy-executed-api" \
             --targets "Key=InstanceIds,Values=${{ vars.EC2_INSTANCE_ID }}" \
             --parameters commands='[
               "set -e",
-              "sudo apt update",
-              "sudo apt install -y git python3-venv"
-              ]'
+              "mkdir -p /var/www",
+
+              "cd /var/www",
+
+              "if [ ! -d policy-executed-api ]; then git clone https://github.com/Nicholas-devsec/policy-executed-api.git; fi",
+              "cd policy-executed-api",
+              "git pull",
+
+              "if [ ! -d .venv ]; then python3 -m venv .venv; fi",
+              "source .venv/bin/activate",
+              "pip install --upgrade pip",
+              "pip install -r requirements.txt",
+
+              "cp policy-executed-api.service /etc/systemd/system/",
+              "systemctl daemon-reload",
+              "systemctl enable policy-executed-api",
+              "systemctl restart policy-executed-api",
+
+              "echo Deployment successful"
+            ]'
