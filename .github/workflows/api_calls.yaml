@@ -1,0 +1,36 @@
+name: AWS Code EC2 Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write    
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_DEPLOY_ROLE_ARN }}:role/CiCD-Testing-Github
+          aws-region: us-east-1
+
+      - name: Deploy via SSM
+        run: |
+          aws ssm send-command \
+            --document-name "AWS-RunShellScript" \
+            --comment "GitHub Actions deploy" \
+            --targets "Key=InstanceIds,Values=${{ vars.EC2_INSTANCE_ID }}" \
+            --parameters commands='[
+              "set -e",
+              "sudo apt update",
+              "sudo apt install -y git python3-venv"
+              ]'
